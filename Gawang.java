@@ -14,6 +14,11 @@ public class Gawang extends Rectangle {
 
     public void draw(Graphics g) {
         g.setColor(Color.white); 
-        g.fillRect(x, y, width, height);
+
+        g.fillRect(x, y, width, 10); 
+
+        g.fillRect(x, y + 10, 10, height - 10); 
+
+        g.fillRect(x + width - 10, y + 10, 10, height - 10); 
     }
 }
