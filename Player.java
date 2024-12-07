@@ -50,27 +50,9 @@ public class Player extends Rectangle {
         if (jumping) yVelocity += 1;
     }
 
-    public void handleBallCollision(Ball ball) {
-        Rectangle body = new Rectangle(x, y, width, height);
-        Rectangle head = new Rectangle(x + (width / 2) - (headDiameter / 2), y - headDiameter, headDiameter, headDiameter);
-        resolveCollisionWithPlayer(ball, body, new Rectangle(ball.x + ball.xVelocity, ball.y, ball.width, ball.height), new Rectangle(ball.x, ball.y + ball.yVelocity, ball.width, ball.height));
-        resolveCollisionWithPlayer(ball, head, new Rectangle(ball.x + ball.xVelocity, ball.y, ball.width, ball.height), new Rectangle(ball.x, ball.y + ball.yVelocity, ball.width, ball.height));
-    }
-
-    private void resolveCollisionWithPlayer(Ball ball, Rectangle playerPart, Rectangle ballBoundsNextX, Rectangle ballBoundsNextY) {
-        if (ballBoundsNextX.intersects(playerPart)) {
-            if (ball.xVelocity > 0) { ball.setXDirection(-Math.abs(ball.xVelocity)); ball.x = playerPart.x - ball.width; }
-            else if (ball.xVelocity < 0) { ball.setXDirection(Math.abs(ball.xVelocity)); ball.x = playerPart.x + playerPart.width; }
-        }
-        if (ballBoundsNextY.intersects(playerPart)) {
-            if (ball.yVelocity > 0) { ball.setYDirection(-Math.abs(ball.yVelocity)); ball.y = playerPart.y - ball.height; }
-            else if (ball.yVelocity < 0) { ball.setYDirection(Math.abs(ball.yVelocity)); ball.y = playerPart.y + playerPart.height; }
-        }
-    }
-
     public void draw(Graphics g) {
         g.setColor(id == 1 ? Color.blue : Color.red);
-        g.fillOval(x + (width / 2) - (headDiameter / 2), y - headDiameter, headDiameter, headDiameter);
+        g.fillOval(x + (width/2) - (headDiameter/2), y - 3 ,  headDiameter, headDiameter);
         g.fillRect(x, y, width, height);
     }
 }
