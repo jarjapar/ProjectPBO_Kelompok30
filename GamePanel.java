@@ -9,15 +9,16 @@ public class GamePanel extends JPanel implements ActionListener {
     static final Dimension SCREEN_SIZE = new Dimension(GAME_WIDTH, GAME_HEIGHT);
     static final int BALL_DIAMETER = 20;
     static final int PADDLE_WIDTH = 25;
-    static final int PADDLE_HEIGHT = 70;
+    static final int PADDLE_HEIGHT = 100;
     static final int PLAYER_START_Y = (int) (GAME_HEIGHT * 1);
 
     Image backgroundImage;
     Gawang gawang1, gawang2;
     Player player1, player2;
-    Ball ball; 
+    Ball ball;
     Timer timer;
     Random random = new Random();
+    Score score;
 
     GamePanel() {
         backgroundImage = new ImageIcon("aset/lap.png").getImage();
@@ -26,7 +27,7 @@ public class GamePanel extends JPanel implements ActionListener {
         this.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                player1.keyPressed(e);
+                player1.keyPressed(e);  
                 player2.keyPressed(e);
             }
 
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel implements ActionListener {
         newPlayers();
         newGawang();
         newBall();
+        score = new Score(GAME_WIDTH, GAME_HEIGHT); 
         timer = new Timer(10, this);
         timer.start();
     }
@@ -68,7 +70,13 @@ public class GamePanel extends JPanel implements ActionListener {
             ball.setYDirection(-ball.yVelocity);
         }
         if (ball.x <= 0 || ball.x >= GAME_WIDTH - BALL_DIAMETER) {
-            ball.setXDirection(-ball.xVelocity);
+            if (ball.x <= 0) {
+                score.player2 += 10; 
+            }
+            if (ball.x >= GAME_WIDTH - BALL_DIAMETER) {
+                score.player1 += 10;
+            }
+            newBall();
         }
         if (ball.intersects(player1)) {
             ball.setXDirection(Math.abs(ball.xVelocity));
@@ -90,6 +98,7 @@ public class GamePanel extends JPanel implements ActionListener {
         ball.draw(g);
         gawang1.draw(g);
         gawang2.draw(g);
+        score.draw(g);
     }
 
     @Override
