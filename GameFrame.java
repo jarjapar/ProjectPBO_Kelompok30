@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
@@ -19,10 +17,6 @@ public class GameFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        ArrayList<PlayerModel> players = PlayerDB.getPlayers();
-        for (PlayerModel playerModel : players) {
-            System.out.println(playerModel.getName());
-        }
         new GameFrame();
     }
 }

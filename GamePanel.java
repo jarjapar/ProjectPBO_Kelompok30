@@ -19,7 +19,7 @@ public class GamePanel extends JPanel {
     private Ball ball;
     private Score score;
     private Timer gameTimer;
-    private int remainingTime = 20;
+    private int remainingTime = 120;
     private boolean isExtraTime = false;
     private boolean isDrawNotificationShown = false;
     private String player1Name;
@@ -124,7 +124,7 @@ public class GamePanel extends JPanel {
                     layeredPane.remove(notificationPanel);
                     layeredPane.repaint();
                 }
-            }, 5000);
+            }, 1500);
         }
     }
 
