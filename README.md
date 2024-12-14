@@ -1,1 +1,12 @@
 # ProjectPBO_Kelompok30
+## Soccer by One
+### Latar Belakang
+Sepak bola merupakan olahraga yang telah menjadi bagian tak terpisahkan dari kehidupan banyak orang di seluruh dunia. Dengan sifatnya yang dinamis dan penuh strategi, sepak bola tidak hanya menjadi hiburan, tetapi juga cara untuk membangun semangat tim, meningkatkan kebugaran, dan menjalin hubungan sosial. Namun, tidak semua orang memiliki kesempatan untuk bermain secara langsung karena keterbatasan ruang, waktu, atau kondisi tertentu, sehingga muncul kebutuhan akan alternatif yang tetap bisa menghadirkan keseruan sepak bola.
+
+Seiring berkembangnya teknologi, permainan digital berbasis sepak bola menjadi solusi yang menarik untuk menjembatani keterbatasan tersebut. Game seperti ini memungkinkan siapa saja, kapan saja, dan di mana saja, untuk merasakan atmosfer kompetisi yang seru tanpa harus berada di lapangan sesungguhnya. Dengan kontrol yang sederhana dan visual yang menawan, game berbasis sepak bola mampu menjadi sarana hiburan sekaligus media edukasi yang menekankan pentingnya strategi dan kerjasama.
+
+Berangkat dari kebutuhan ini, game "Soccer by One" dirancang sebagai permainan sepak bola digital yang mengutamakan pengalaman bermain yang menyenangkan dan interaktif. Melalui fitur kompetisi dua pemain, statistik permainan, dan elemen visual yang menarik, game ini bertujuan untuk menghadirkan sensasi bermain sepak bola yang sederhana namun tetap kompetitif, menjadikannya pilihan tepat bagi mereka yang ingin menikmati sepak bola secara praktis dan menyenangkan.
+
+### Deskripsi
+
+"Soccer by One" adalah sebuah permainan digital yang dirancang untuk menghadirkan keseruan sepak bola dalam format yang sederhana namun tetap kompetitif. Game ini memungkinkan dua pemain untuk beradu keterampilan dalam mencetak gol, sambil menampilkan elemen visual yang menarik dan kontrol yang mudah dipahami. Dengan fitur seperti input nama pemain, pencatatan skor, dan akses ke riwayat permainan, "Soccer by One" tidak hanya menjadi sarana hiburan, tetapi juga menciptakan pengalaman interaktif yang menyenangkan bagi semua kalangan. Game ini merupakan pilihan tepat bagi mereka yang ingin merasakan atmosfer kompetisi sepak bola secara praktis dan menghibur.
