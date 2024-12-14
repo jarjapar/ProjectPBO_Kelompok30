@@ -1,24 +1,19 @@
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.*;
 
-public class Gawang extends Rectangle {
-    int width, height;
-
+public class Gawang extends Rectangle implements Movable {
     public Gawang(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        super(x, y, width, height);
     }
 
+    @Override
+    public void move() {
+        
+    }
+    @Override
     public void draw(Graphics g) {
-        g.setColor(Color.white); 
-
-        g.fillRect(x, y, width, 10); 
-
-        g.fillRect(x, y + 10, 10, height - 10); 
-
-        g.fillRect(x + width - 10, y + 10, 10, height - 10); 
+        g.setColor(Color.white);
+        g.fillRect(x, y, width, 10);
+        g.fillRect(x, y + 10, 10, height - 10);
+        g.fillRect(x + width - 10, y + 10, 10, height - 10);
     }
 }
