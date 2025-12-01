@@ -137,7 +137,8 @@ public class StartMenu extends JPanel {
 
     // ---------- HOST MODE ----------
     private void startHostGame() {
-        hostButton.setEnabled(false); // biar nggak diklik 2x
+        hostButton.setEnabled(false);
+        joinButton.setEnabled(false); // biar nggak diklik 2x
 
         NetworkHost host = new NetworkHost();
 
