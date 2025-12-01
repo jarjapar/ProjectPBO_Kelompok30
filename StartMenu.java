@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 public class StartMenu extends JPanel {
     private JButton startButton;
     private JButton historyButton;
+    private JButton hostButton;
+    private JButton joinButton;
     private JLabel titleLabel;
     private JLabel instructionLabel;
     private JLabel player1Label;
@@ -49,17 +51,18 @@ public class StartMenu extends JPanel {
         player2Label = new JLabel("Nama Player 2:");
         player2Label.setFont(new Font("Arial", Font.PLAIN, 20));
         player2Label.setForeground(Color.black);
-        player2Label.setBounds(320, 250, 150, 30);
+        player2Label.setBounds(320, 220, 150, 30);
         background.add(player2Label);
 
         player2NameField = new JTextField();
         player2NameField.setFont(new Font("Arial", Font.PLAIN, 20));
-        player2NameField.setBounds(470, 250, 200, 30);
+        player2NameField.setBounds(470, 220, 200, 30);
         background.add(player2NameField);
 
-        startButton = new JButton("Mulai");
-        startButton.setFont(new Font("Arial", Font.PLAIN, 30));
-        startButton.setBounds(400, 300, 200, 50);
+        // Tombol Local
+        startButton = new JButton("Mulai Local");
+        startButton.setFont(new Font("Arial", Font.PLAIN, 20));
+        startButton.setBounds(340, 280, 150, 40);
         startButton.setBackground(Color.decode("#ADD8E6"));
         startButton.setForeground(Color.white);
         startButton.setFocusPainted(false);
@@ -77,12 +80,64 @@ public class StartMenu extends JPanel {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startGame();
+                startLocalGame();
+            }
+        });
+        background.add(startButton);
+
+        // Tombol Host Online
+        hostButton = new JButton("Host Online");
+        hostButton.setFont(new Font("Arial", Font.PLAIN, 20));
+        hostButton.setBounds(500, 280, 150, 40);
+        hostButton.setBackground(Color.decode("#ADD8E6"));
+        hostButton.setForeground(Color.white);
+        hostButton.setFocusPainted(false);
+
+        hostButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                hostButton.setBackground(Color.lightGray);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                hostButton.setBackground(Color.decode("#ADD8E6"));
             }
         });
 
-        background.add(startButton);
+        hostButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startHostGame();
+            }
+        });
+        background.add(hostButton);
 
+        // Tombol Join Online
+        joinButton = new JButton("Join Online");
+        joinButton.setFont(new Font("Arial", Font.PLAIN, 20));
+        joinButton.setBounds(660, 280, 150, 40);
+        joinButton.setBackground(Color.decode("#ADD8E6"));
+        joinButton.setForeground(Color.white);
+        joinButton.setFocusPainted(false);
+
+        joinButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                joinButton.setBackground(Color.lightGray);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                joinButton.setBackground(Color.decode("#ADD8E6"));
+            }
+        });
+
+        joinButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startClientGame();
+            }
+        });
+        background.add(joinButton);
+
+        // Tombol History
         historyButton = new JButton("History");
         historyButton.setFont(new Font("Arial", Font.PLAIN, 20));
         historyButton.setBounds(10, 10, 100, 40);
@@ -106,21 +161,31 @@ public class StartMenu extends JPanel {
                 showHistoryPanel();
             }
         });
-
         background.add(historyButton);
     }
 
-    private void startGame() {
+    private String[] getPlayerNamesOrShowError() {
         String player1Name = player1NameField.getText().trim();
         String player2Name = player2NameField.getText().trim();
 
         if (player1Name.isEmpty() || player2Name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nama Player 1 dan Player 2 harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            JOptionPane.showMessageDialog(this,
+                    "Nama Player 1 dan Player 2 harus diisi!",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return null;
         }
+        return new String[]{player1Name, player2Name};
+    }
 
-        System.out.println("Player 1: " + player1Name);
-        System.out.println("Player 2: " + player2Name);
+    private void startLocalGame() {
+        String[] names = getPlayerNamesOrShowError();
+        if (names == null) return;
+
+        String player1Name = names[0];
+        String player2Name = names[1];
+
+        System.out.println("Local - Player 1: " + player1Name);
+        System.out.println("Local - Player 2: " + player2Name);
 
         PlayerDB.insertPlayer(player1Name, 0);
         PlayerDB.insertPlayer(player2Name, 0);
@@ -134,6 +199,86 @@ public class StartMenu extends JPanel {
         frame.repaint();
 
         SwingUtilities.invokeLater(gamePanel::requestFocusInWindow);
+    }
+    
+
+    private void startHostGame() {
+        String[] names = getPlayerNamesOrShowError();
+        if (names == null) return;
+
+        String player1Name = names[0];
+        String player2Name = names[1];
+
+        PlayerDB.insertPlayer(player1Name, 0);
+        PlayerDB.insertPlayer(player2Name, 0);
+
+        NetworkHost host = new NetworkHost();
+
+        // Jalankan listen di thread sendiri supaya UI tidak nge-freeze
+        new Thread(() -> {
+            try {
+                host.start(5001); // port boleh kamu ganti
+                SwingUtilities.invokeLater(() -> {
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    frame.remove(this);
+
+                    GamePanel gamePanel = new GamePanel(
+                            player1Name,
+                            player2Name,
+                            GamePanel.GameMode.HOST, // butuh akses, jadi ubah access modifier kalau perlu
+                            host,
+                            null
+                    );
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this,
+                                "Gagal membuat host: " + ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE));
+            }
+        }, "Host-Accept-Thread").start();
+    }
+
+    private void startClientGame() {
+        String[] names = getPlayerNamesOrShowError();
+        if (names == null) return;
+
+        String player1Name = names[0];
+        String player2Name = names[1];
+
+        String hostIp = JOptionPane.showInputDialog(this, "Masukkan IP Host:");
+        if (hostIp == null || hostIp.trim().isEmpty()) return;
+
+        NetworkClient client = new NetworkClient();
+
+        new Thread(() -> {
+            try {
+                client.connect(hostIp.trim(), 5001);
+                SwingUtilities.invokeLater(() -> {
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    frame.remove(this);
+
+                    GamePanel gamePanel = new GamePanel(
+                            player1Name,
+                            player2Name,
+                            GamePanel.GameMode.CLIENT,
+                            null,
+                            client
+                    );
+                    frame.add(gamePanel);
+                    frame.revalidate();
+                    frame.repaint();
+                    SwingUtilities.invokeLater(gamePanel::requestFocusInWindow);
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this,
+                                "Gagal konek ke host: " + ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE));
+            }
+        }, "Client-Connect-Thread").start();
     }
 
     private void showHistoryPanel() {

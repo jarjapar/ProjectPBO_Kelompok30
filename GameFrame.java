@@ -1,10 +1,9 @@
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
-    GamePanel panel;
     StartMenu startMenu;
 
-    GameFrame() {
+    public GameFrame() {
         startMenu = new StartMenu();
         this.add(startMenu);
 
