@@ -482,9 +482,34 @@ public class GamePanel extends JPanel {
     JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
     if (frame != null) {
         frame.remove(this);
-        frame.add(new Notification(message));
+
+        // tampilkan notifikasi
+        Notification notif = new Notification(message);
+        frame.add(notif);
         frame.revalidate();
         frame.repaint();
+
+        // setelah 3 detik, kembali ke StartMenu
+        new java.util.Timer().schedule(
+            new java.util.TimerTask() {
+                public void run() {
+                    SwingUtilities.invokeLater(() -> {
+                        frame.remove(notif);
+                        StartMenu menu = new StartMenu();
+                        frame.add(menu);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                }
+            },
+            3000
+        );
+
+
+        // frame.remove(this);
+        // frame.add(new Notification(message));
+        // frame.revalidate();
+        // frame.repaint();
     }
 }
 
