@@ -261,14 +261,15 @@ public class GamePanel extends JPanel {
             HistoryDB.insertHistory(player1Name, player2Name, score.player1, score.player2);
         }
 
+        if (networkHost != null) {
+            networkHost.stop();    // tutup ServerSocket, client socket, dll
+        }
+        if (networkClient != null) {
+            networkClient.stop();  // tutup koneksi dari sisi client
+        }
+        
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         if (frame != null) {
-            if (networkHost != null) {
-                networkHost.stop();    // tutup ServerSocket, client socket, dll
-            }
-            if (networkClient != null) {
-                networkClient.stop();  // tutup koneksi dari sisi client
-            }
             frame.remove(this);
             frame.add(new Notification(message));
             frame.revalidate();
