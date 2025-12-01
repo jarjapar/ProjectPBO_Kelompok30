@@ -23,6 +23,7 @@ public class GamePanel extends JPanel {
     private boolean isExtraTime = false;
     private boolean isDrawNotificationShown = false;
     private boolean clientGameOverShown = false;
+    private boolean clientResultShown = false;
     private String player1Name;
     private String player2Name;
 
@@ -153,10 +154,19 @@ public class GamePanel extends JPanel {
     remainingTime = state.remainingTime;
     isExtraTime = state.extraTime;
 
-    // *** Tambahan: kalau host sudah kirim gameOver, client juga tutup game ***
-    if (state.gameOver && !clientGameOverShown && gameMode == GameMode.CLIENT) {
-        clientGameOverShown = true;
-        showClientResult(state.winner);
+    if (gameMode == GameMode.CLIENT && !clientResultShown && remainingTime <= 0) {
+        clientResultShown = true;
+
+        int winnerCode;
+        if (score.player1 > score.player2) {
+            winnerCode = 1;
+        } else if (score.player2 > score.player1) {
+            winnerCode = 2;
+        } else {
+            winnerCode = 0;
+        }
+
+        showClientResult(winnerCode);
     }
 }
 
@@ -457,9 +467,10 @@ public class GamePanel extends JPanel {
     JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
     if (frame != null) {
         frame.remove(this);
-        frame.add(new Notification(message));
+        frame.add(new Notification(message)); // sama seperti di declareWinner()
         frame.revalidate();
         frame.repaint();
     }
 }
+
 }
