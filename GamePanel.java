@@ -261,12 +261,6 @@ public class GamePanel extends JPanel {
             HistoryDB.insertHistory(player1Name, player2Name, score.player1, score.player2);
         }
 
-        if (networkHost != null) {
-            networkHost.stop();    // tutup ServerSocket, client socket, dll
-        }
-        if (networkClient != null) {
-            networkClient.stop();  // tutup koneksi dari sisi client
-        }
         
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         if (frame != null) {
@@ -276,6 +270,12 @@ public class GamePanel extends JPanel {
             frame.repaint();
         } else {
             System.err.println("Error: JFrame is null.");
+        }
+        if (networkHost != null) {
+            networkHost.stop();    // tutup ServerSocket, client socket, dll
+        }
+        if (networkClient != null) {
+            networkClient.stop();  // tutup koneksi dari sisi client
         }
     }
 
