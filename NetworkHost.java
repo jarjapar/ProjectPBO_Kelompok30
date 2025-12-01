@@ -11,6 +11,7 @@ import java.net.Socket;
  * - Menerima INPUT dari client (PlayerInput)
  * - Menerima NAME dari client (nama Player 2)
  * - Mengirim STATE (GameState) ke client
+ * - Mengirim GAMEOVER;winner;score1;score2 ke client saat game berakhir
  */
 public class NetworkHost {
 
@@ -31,7 +32,7 @@ public class NetworkHost {
         clientSocket = serverSocket.accept();
         System.out.println("Client terhubung: " + clientSocket.getInetAddress());
 
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        in  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         out = new PrintWriter(clientSocket.getOutputStream(), true);
 
         running = true;
@@ -50,7 +51,6 @@ public class NetworkHost {
                         latestInput = input;
                     }
                 } else if (line.startsWith("NAME;")) {
-                    // FORMAT: NAME;NamaPlayer2
                     clientName = line.substring(5).trim();
                     System.out.println("Nama client diterima: " + clientName);
                 }
@@ -61,7 +61,6 @@ public class NetworkHost {
     }
 
     public PlayerInput getLatestInput() {
-        // return copy supaya aman dari race-condition ringan
         return latestInput.copy();
     }
 
@@ -71,17 +70,18 @@ public class NetworkHost {
         }
     }
 
-    /**
-     * Mengambil nama client (Player 2) kalau sudah ada, bisa null kalau belum dikirim.
-     */
+    // dipanggil saat game sudah benar-benar selesai di host
+    public void sendGameOver(int winnerCode, int score1, int score2) {
+        if (out != null) {
+            // FORMAT: GAMEOVER;winner;score1;score2
+            out.println("GAMEOVER;" + winnerCode + ";" + score1 + ";" + score2);
+        }
+    }
+
     public String getClientName() {
         return clientName;
     }
 
-    /**
-     * Menunggu sampai nama client diterima (atau host dihentikan).
-     * Dipakai di StartMenu supaya host bisa tahu nama Player 2 sebelum mulai game.
-     */
     public String waitForClientName() {
         while (running && clientName == null) {
             try {

@@ -10,6 +10,7 @@ import java.net.Socket;
  * - Mengirim INPUT (PlayerInput) ke host
  * - Mengirim NAME (nama Player 2) ke host
  * - Menerima STATE (GameState) dari host
+ * - Menerima GAMEOVER;winner;score1;score2 dari host
  */
 public class NetworkClient {
 
@@ -20,11 +21,17 @@ public class NetworkClient {
     private volatile GameState latestState = new GameState();
     private volatile boolean running = false;
 
+    // Flag & data game-over dari host
+    private volatile boolean gameOver = false;
+    private volatile int finalWinnerCode = 0;
+    private volatile int finalScore1 = 0;
+    private volatile int finalScore2 = 0;
+
     public void connect(String hostIp, int port) throws IOException {
         socket = new Socket(hostIp, port);
         System.out.println("Terhubung ke host " + hostIp + ":" + port);
 
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
         running = true;
@@ -42,9 +49,19 @@ public class NetworkClient {
                     if (state != null) {
                         latestState = state;
                     }
+                } else if (line.startsWith("GAMEOVER;")) {
+                    // FORMAT: GAMEOVER;winner;score1;score2
+                    String[] parts = line.split(";");
+                    if (parts.length >= 4) {
+                        try {
+                            finalWinnerCode = Integer.parseInt(parts[1]);
+                            finalScore1     = Integer.parseInt(parts[2]);
+                            finalScore2     = Integer.parseInt(parts[3]);
+                            gameOver        = true;
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
                 }
-                // Pesan "NAME;..." hanya dikirim dari client ke host,
-                // jadi di sisi client tidak perlu di-handle.
             }
         } catch (IOException e) {
             System.out.println("Koneksi ke host terputus: " + e.getMessage());
@@ -57,10 +74,6 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Mengirim nama client (Player 2) ke host.
-     * Dipanggil setelah user mengisi nama di StartMenu (client).
-     */
     public void sendPlayerName(String name) {
         if (out != null && name != null) {
             out.println("NAME;" + name);
@@ -69,6 +82,23 @@ public class NetworkClient {
 
     public GameState getLatestState() {
         return latestState;
+    }
+
+    // getter untuk game-over
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public int getFinalWinnerCode() {
+        return finalWinnerCode;
+    }
+
+    public int getFinalScore1() {
+        return finalScore1;
+    }
+
+    public int getFinalScore2() {
+        return finalScore2;
     }
 
     public void stop() {
