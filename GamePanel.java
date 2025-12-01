@@ -19,9 +19,10 @@ public class GamePanel extends JPanel {
     private Ball ball;
     private Score score;
     private Timer gameTimer;
-    private int remainingTime = 120;
+    private int remainingTime = 15;
     private boolean isExtraTime = false;
     private boolean isDrawNotificationShown = false;
+    private boolean clientGameOverShown = false;
     private String player1Name;
     private String player2Name;
 
@@ -132,41 +133,52 @@ public class GamePanel extends JPanel {
     }
 
     private void updateFromNetworkState() {
-        if (networkClient == null) return;
-        GameState state = networkClient.getLatestState();
-        if (state == null) return;
+    if (networkClient == null) return;
+    GameState state = networkClient.getLatestState();
+    if (state == null) return;
 
-        // Terapkan state ke objek lokal
-        ball.x = state.ballX;
-        ball.y = state.ballY;
+    // Terapkan state ke objek lokal
+    ball.x = state.ballX;
+    ball.y = state.ballY;
 
-        player1.x = state.p1X;
-        player1.y = state.p1Y;
+    player1.x = state.p1X;
+    player1.y = state.p1Y;
 
-        player2.x = state.p2X;
-        player2.y = state.p2Y;
+    player2.x = state.p2X;
+    player2.y = state.p2Y;
 
-        score.player1 = state.score1;
-        score.player2 = state.score2;
+    score.player1 = state.score1;
+    score.player2 = state.score2;
 
-        remainingTime = state.remainingTime;
-        isExtraTime = state.extraTime;
+    remainingTime = state.remainingTime;
+    isExtraTime = state.extraTime;
+
+    // *** Tambahan: kalau host sudah kirim gameOver, client juga tutup game ***
+    if (state.gameOver && !clientGameOverShown && gameMode == GameMode.CLIENT) {
+        clientGameOverShown = true;
+        showClientResult(state.winner);
     }
+}
 
     private GameState createCurrentState() {
-        GameState state = new GameState();
-        state.ballX = ball.x;
-        state.ballY = ball.y;
-        state.p1X = player1.x;
-        state.p1Y = player1.y;
-        state.p2X = player2.x;
-        state.p2Y = player2.y;
-        state.score1 = score.player1;
-        state.score2 = score.player2;
-        state.remainingTime = remainingTime;
-        state.extraTime = isExtraTime;
-        return state;
-    }
+    GameState state = new GameState();
+    state.ballX = ball.x;
+    state.ballY = ball.y;
+    state.p1X = player1.x;
+    state.p1Y = player1.y;
+    state.p2X = player2.x;
+    state.p2Y = player2.y;
+    state.score1 = score.player1;
+    state.score2 = score.player2;
+    state.remainingTime = remainingTime;
+    state.extraTime = isExtraTime;
+
+    // default: belum game over
+    state.gameOver = false;
+    state.winner = 0;
+
+    return state;
+}
 
     private void startGameTimer() {
         gameTimer = new Timer();
@@ -219,32 +231,46 @@ public class GamePanel extends JPanel {
     }
 
     private void declareWinner() {
-        String message;
-        if (score.player1 > score.player2) {
-            message = "Player 1 Wins!\nSkor: " + score.player1 + " - " + score.player2;
-        } else if (score.player2 > score.player1) {
-            message = "Player 2 Wins!\nSkor: " + score.player1 + " - " + score.player2;
-        } else {
-            message = "Draw!\nSkor: " + score.player1 + " - " + score.player2;
-        }
+    String message;
+    int winnerCode; // 0 draw, 1 p1, 2 p2
 
-        // Update DB hanya di LOCAL / HOST
-        if (gameMode != GameMode.CLIENT) {
-            PlayerDB.updatePlayerScore(player1Name, score.player1);
-            PlayerDB.updatePlayerScore(player2Name, score.player2);
-            HistoryDB.insertHistory(player1Name, player2Name, score.player1, score.player2);
-        }
-
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (frame != null) {
-            frame.remove(this);
-            frame.add(new Notification(message));
-            frame.revalidate();
-            frame.repaint();
-        } else {
-            System.err.println("Error: JFrame is null.");
-        }
+    if (score.player1 > score.player2) {
+        message = "Player 1 Wins!\nSkor: " + score.player1 + " - " + score.player2;
+        winnerCode = 1;
+    } else if (score.player2 > score.player1) {
+        message = "Player 2 Wins!\nSkor: " + score.player1 + " - " + score.player2;
+        winnerCode = 2;
+    } else {
+        message = "Draw!\nSkor: " + score.player1 + " - " + score.player2;
+        winnerCode = 0;
     }
+
+    // *** Tambahan: kirim state final ke client kalau ini HOST ***
+    if (gameMode == GameMode.HOST && networkHost != null) {
+        GameState finalState = createCurrentState();
+        finalState.gameOver = true;
+        finalState.winner = winnerCode;
+        networkHost.sendState(finalState);
+    }
+
+    // Update DB hanya di LOCAL / HOST
+    if (gameMode != GameMode.CLIENT) {
+        PlayerDB.updatePlayerScore(player1Name, score.player1);
+        PlayerDB.updatePlayerScore(player2Name, score.player2);
+        HistoryDB.insertHistory(player1Name, player2Name, score.player1, score.player2);
+    }
+
+    // Tampilkan notifikasi di sisi panel ini (host/local)
+    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+    if (frame != null) {
+        frame.remove(this);
+        frame.add(new Notification(message));
+        frame.revalidate();
+        frame.repaint();
+    } else {
+        System.err.println("Error: JFrame is null.");
+    }
+}
 
     private void handleKeyEvent(KeyEvent e, boolean isPressed) {
         int key = e.getKeyCode();
@@ -417,4 +443,23 @@ public class GamePanel extends JPanel {
         int seconds = remainingTime % 60;
         g.drawString(String.format("%02d:%02d", minutes, seconds), GAME_WIDTH / 2 - 20, 30);
     }
+
+    private void showClientResult(int winnerCode) {
+    String message;
+    if (winnerCode == 1) {
+        message = "Player 1 Wins!\nSkor: " + score.player1 + " - " + score.player2;
+    } else if (winnerCode == 2) {
+        message = "Player 2 Wins!\nSkor: " + score.player1 + " - " + score.player2;
+    } else {
+        message = "Draw!\nSkor: " + score.player1 + " - " + score.player2;
+    }
+
+    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+    if (frame != null) {
+        frame.remove(this);
+        frame.add(new Notification(message));
+        frame.revalidate();
+        frame.repaint();
+    }
+}
 }
