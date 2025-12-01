@@ -154,7 +154,7 @@ public class GamePanel extends JPanel {
     remainingTime = state.remainingTime;
     isExtraTime = state.extraTime;
 
-    if (gameMode == GameMode.CLIENT && !clientResultShown && remainingTime <= 0) {
+    if (gameMode == GameMode.CLIENT && !clientResultShown && state.gameOver) {
         clientResultShown = true;
 
         int winnerCode;
