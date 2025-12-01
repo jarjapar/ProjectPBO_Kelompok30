@@ -9,6 +9,7 @@ import java.net.Socket;
  * Host / Server:
  * - Menerima koneksi 1 client
  * - Menerima INPUT dari client (PlayerInput)
+ * - Menerima NAME dari client (nama Player 2)
  * - Mengirim STATE (GameState) ke client
  */
 public class NetworkHost {
@@ -20,6 +21,9 @@ public class NetworkHost {
 
     private volatile PlayerInput latestInput = new PlayerInput();
     private volatile boolean running = false;
+
+    // Nama client (Player 2) yang dikirim lewat pesan "NAME;..."
+    private volatile String clientName = null;
 
     public void start(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -45,6 +49,10 @@ public class NetworkHost {
                     if (input != null) {
                         latestInput = input;
                     }
+                } else if (line.startsWith("NAME;")) {
+                    // FORMAT: NAME;NamaPlayer2
+                    clientName = line.substring(5).trim();
+                    System.out.println("Nama client diterima: " + clientName);
                 }
             }
         } catch (IOException e) {
@@ -61,6 +69,28 @@ public class NetworkHost {
         if (out != null && state != null) {
             out.println(state.toMessage());
         }
+    }
+
+    /**
+     * Mengambil nama client (Player 2) kalau sudah ada, bisa null kalau belum dikirim.
+     */
+    public String getClientName() {
+        return clientName;
+    }
+
+    /**
+     * Menunggu sampai nama client diterima (atau host dihentikan).
+     * Dipakai di StartMenu supaya host bisa tahu nama Player 2 sebelum mulai game.
+     */
+    public String waitForClientName() {
+        while (running && clientName == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        return clientName;
     }
 
     public void stop() {

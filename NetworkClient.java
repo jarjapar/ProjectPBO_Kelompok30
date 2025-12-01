@@ -8,6 +8,7 @@ import java.net.Socket;
  * Client:
  * - Connect ke host
  * - Mengirim INPUT (PlayerInput) ke host
+ * - Mengirim NAME (nama Player 2) ke host
  * - Menerima STATE (GameState) dari host
  */
 public class NetworkClient {
@@ -42,6 +43,8 @@ public class NetworkClient {
                         latestState = state;
                     }
                 }
+                // Pesan "NAME;..." hanya dikirim dari client ke host,
+                // jadi di sisi client tidak perlu di-handle.
             }
         } catch (IOException e) {
             System.out.println("Koneksi ke host terputus: " + e.getMessage());
@@ -51,6 +54,16 @@ public class NetworkClient {
     public void sendInput(PlayerInput input) {
         if (out != null && input != null) {
             out.println(input.toMessage());
+        }
+    }
+
+    /**
+     * Mengirim nama client (Player 2) ke host.
+     * Dipanggil setelah user mengisi nama di StartMenu (client).
+     */
+    public void sendPlayerName(String name) {
+        if (out != null && name != null) {
+            out.println("NAME;" + name);
         }
     }
 
