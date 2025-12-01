@@ -6,6 +6,8 @@ public class PlayerSet extends GameObject {
     int jumpStrength = 20;
     boolean jumping = false;
     int headDiameter = 50;
+    private boolean lastUpInput = false;
+    private boolean lastJumpInput = false;
 
     public PlayerSet(int x, int y, int width, int height, int id) {
         super(x, y, width, height);
@@ -87,10 +89,10 @@ public class PlayerSet extends GameObject {
     /**
      * Dipanggil host untuk menerapkan input dari client (P2).
      */
-    public void applyNetworkInput(PlayerInput input) {
+        public void applyNetworkInput(PlayerInput input) {
         if (input == null) return;
 
-        // Horizontal
+        // --- Gerakan horizontal ---
         if (input.left && !input.right) {
             setXDirection(-speed);
         } else if (input.right && !input.left) {
@@ -99,20 +101,22 @@ public class PlayerSet extends GameObject {
             setXDirection(0);
         }
 
-        // Vertical (opsional, kalau mau pakai)
-        if (input.down && !input.up) {
-            setYDirection(speed);
-        } else if (!input.down) {
-            // Kalau tidak menekan down, kita biarkan gravitasi / jump yang atur
-            setYDirection(0);
+        // !!! JANGAN sentuh setYDirection di sini !!!
+        // Biarkan jump() + gravitasi yang mengatur Y.
+
+        // --- Lompat: hanya saat tombol baru ditekan (rising edge) ---
+        boolean upNow = input.up;
+        boolean jumpNow = input.jump;
+
+        // kalau barusan ditekan (sebelumnya false, sekarang true) dan belum lompat
+        if (upNow && !lastUpInput && !jumping) {
+            jump();
+        } else if (jumpNow && !lastJumpInput && !jumping) {
+            jump();
         }
 
-        // Jump (sekali pada saat tombol ditekan)
-        if (input.up && !jumping) {
-            jump();
-        } else if (input.jump && !jumping) {
-            // kalau mau map SPACE ke jump juga
-            jump();
-        }
+        // simpan state tombol untuk frame berikutnya
+        lastUpInput = upNow;
+        lastJumpInput = jumpNow;
     }
 }
