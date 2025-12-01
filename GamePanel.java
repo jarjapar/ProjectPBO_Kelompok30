@@ -22,7 +22,7 @@ public class GamePanel extends JPanel {
     private int remainingTime = 15;
     private boolean isExtraTime = false;
     private boolean isDrawNotificationShown = false;
-    private boolean clientGameOverShown = false;
+    private boolean gameEnded = false;
     private boolean clientResultShown = false;
     private String player1Name;
     private String player2Name;
@@ -191,24 +191,35 @@ public class GamePanel extends JPanel {
             public void run() {
                 if (remainingTime > 0) {
                     remainingTime--;
-                    repaint();
+                    SwingUtilities.invokeLater(() -> repaint());
                 } else {
-                    handleGameEnd();
+                    SwingUtilities.invokeLater(() -> handleGameEnd());
                 }
             }
         }, 1000, 1000);
     }
 
     private void handleGameEnd() {
-        if (gameTimer != null) {
-            gameTimer.cancel();
-        }
+        if (gameEnded) return;
+
+        // Extra time cuma boleh sekali (saat skor seri dan belum extra time)
         if (score.player1 == score.player2 && !isExtraTime) {
+            // Mulai extra time
             isExtraTime = true;
+            if (gameTimer != null) {
+                gameTimer.cancel();
+                gameTimer = null;
+            }
             showDrawNotification();
-            remainingTime = 60;
-            startGameTimer();
+            remainingTime = 60;      // 1 menit extra time
+            startGameTimer();        // mulai timer extra time
         } else {
+            // Di sini pertandingan BENAR-BENAR selesai
+            gameEnded = true;
+            if (gameTimer != null) {
+                gameTimer.cancel();
+                gameTimer = null;
+            }
             declareWinner();
         }
     }
@@ -261,22 +272,24 @@ public class GamePanel extends JPanel {
             HistoryDB.insertHistory(player1Name, player2Name, score.player1, score.player2);
         }
 
+        if (networkHost != null) {
+            networkHost.stop();    // tutup ServerSocket, client socket, dll
+        }
+        if (networkClient != null) {
+            networkClient.stop();  // tutup koneksi dari sisi client
+        }
         
+        SwingUtilities.invokeLater(() -> {
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         if (frame != null) {
-            frame.remove(this);
-            frame.add(new Notification(message));
+            frame.getContentPane().removeAll();
+            frame.add(new Notification(message));   // pakai panel Notification
             frame.revalidate();
             frame.repaint();
-            if (networkHost != null) {
-                networkHost.stop();    // tutup ServerSocket, client socket, dll
-            }
-            if (networkClient != null) {
-                networkClient.stop();  // tutup koneksi dari sisi client
-            }
         } else {
             System.err.println("Error: JFrame is null.");
         }
+    });
         
     }
 
@@ -461,6 +474,11 @@ public class GamePanel extends JPanel {
         message = "Player 2 Wins!\nSkor: " + score1 + " - " + score2;
     } else {
         message = "Draw!\nSkor: " + score1 + " - " + score2;
+    }
+
+    if (networkClient != null) {
+        networkClient.stop();
+        networkClient = null;
     }
 
     JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
