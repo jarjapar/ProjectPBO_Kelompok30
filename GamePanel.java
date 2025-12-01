@@ -268,15 +268,16 @@ public class GamePanel extends JPanel {
             frame.add(new Notification(message));
             frame.revalidate();
             frame.repaint();
+            if (networkHost != null) {
+                networkHost.stop();    // tutup ServerSocket, client socket, dll
+            }
+            if (networkClient != null) {
+                networkClient.stop();  // tutup koneksi dari sisi client
+            }
         } else {
             System.err.println("Error: JFrame is null.");
         }
-        if (networkHost != null) {
-            networkHost.stop();    // tutup ServerSocket, client socket, dll
-        }
-        if (networkClient != null) {
-            networkClient.stop();  // tutup koneksi dari sisi client
-        }
+        
     }
 
 
